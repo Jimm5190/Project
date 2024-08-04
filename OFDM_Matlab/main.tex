@@ -1,0 +1,629 @@
+% Template by 國立臺北大學 通訊系   NTPU  Communication Engineering
+
+\documentclass[12pt,a4paper]{article} % 指定文件類型
+
+%%------------------Preamble------------------%%
+
+\usepackage{mathtools,amssymb} % 引入數學環境
+\usepackage{amsmath,amsthm,amssymb}
+% 接下來這段用來設定中文環境，必須使用 XeLaTeX 編譯器
+\usepackage[CJKmath=true,AutoFakeBold=3,AutoFakeSlant=.2]{xeCJK} % 使用 XeLaTeX 中日韓套件
+\setCJKmainfont{AR PL KaitiM Big5}  % 設定一般字體(\textrm)
+\setCJKsansfont{AR PL KaitiM Big5}  % 設定無襯線字體(\textrf)
+\setCJKmonofont{AR PL KaitiM Big5}  % 設定打字機字體(\texttt)
+\newCJKfontfamily\NewMing{新細明體}
+\newCJKfontfamily\Kai{標楷體}       
+\newCJKfontfamily\Hei{微軟正黑體}    
+\XeTeXlinebreaklocale "zh"
+
+\setmainfont{Times New Roman} % 設定一般英文字體
+\setsansfont{Times New Roman} % 設定無襯線英文字體
+\setmonofont{Times New Roman} % 設定打字機英文字體
+
+\usepackage{hyperref} % 超連結套件，請儘量讓它是最後一個被引入的
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    urlcolor=black,
+    citecolor=black
+}
+% 使用 biblatex 包并指定 backend 和样式
+\usepackage[backend=biber,style=ieee]{biblatex}
+\addbibresource{reference.bib} % 指定参考文献文件
+
+\makeatletter
+\def\UrlAlphabet{%
+      \do\a\do\b\do\c\do\d\do\e\do\f\do\g\do\h\do\i\do\j%
+      \do\k\do\l\do\m\do\n\do\o\do\p\do\q\do\r\do\s\do\t%
+      \do\u\do\v\do\w\do\x\do\y\do\z\do\A\do\B\do\C\do\D%
+      \do\E\do\F\do\G\do\H\do\I\do\J\do\K\do\L\do\M\do\N%
+      \do\O\do\P\do\Q\do\R\do\S\do\T\do\U\do\V\do\W\do\X%
+      \do\Y\do\Z}
+\def\UrlDigits{\do\1\do\2\do\3\do\4\do\5\do\6\do\7\do\8\do\9\do\0}
+\g@addto@macro{\UrlBreaks}{\UrlOrds}
+\g@addto@macro{\UrlBreaks}{\UrlAlphabet}
+\g@addto@macro{\UrlBreaks}{\UrlDigits}
+\makeatother
+%%-------------------文件區-------------------%%
+
+% \begin{...} 必須搭配 \end{...} 使用
+% 我們的 \end{document} 在這份文件最後一行
+
+\begin{document} 
+
+% 所有想要顯示在 PDF 檔裡面的東西打在這行與 \end{document} 之間。
+\title{\centering\huge{國立臺北大學通訊工程學系\\112學年度專題成果書\\\vspace{2cm}
+5G標準應用--Rayleigh通道中OFDM系統分析}} % 設定標題
+
+\author{\\\\\\指導教授：\\ 沈瑞欽(Juei-Chin Shen)教授\\\\\\組員：\\ 411086040 曾義竣\\411086030 劉家瑋\\411086017 李柏廷} % 設定作者
+\date{June 2024} % 設定完成日期，要顯示今天的日期可以使用 \date{\today}
+\maketitle % 將標題顯示在文件中
+\thispagestyle{empty}
+\setcounter{page}{0}
+\newpage
+\tableofcontents
+\thispagestyle{empty}
+\setcounter{page}{0}
+\newpage
+\section{Abstract}
+在當今的4G和5G通訊系統中，正交多頻分工系統\cite{goldsmith2005wireless}（Orthogonal Frequency 
+Division Multiplexing, OFDM）扮演至關重要的角色。OFDM通常用於處理擴散
+延遲(Delay Spread)所造成的符號間干擾（ISI，Inter Symbol Interference)\cite{goldsmith2005wireless},\cite{ziemer2006principles},\cite{OFDM正交分頻多工系統1}和多路徑通道衰落的問題。
+\section{Delay Spread、ISI and Channel fading}
+Delay spread(擴散延遲)\cite{goldsmith2005wireless}: 當訊號經多路徑通道後會產生各種不同的延遲$\tau$（圖一），而delay spread可簡單定義為最大延遲扣除最小延遲 :
+\[\ T_{m}= \tau_{max} - \tau_{min}\]
+但在大多數文獻應用中，會使用方均根delay spread來描述 : 
+\[\ T_{m(r.m.s)}= \sqrt\frac{\int_{0}^{\infty} (\tau-\bar{\tau})^2A_{c}(\tau) \, d\tau}{\int_{0}^{\infty}A_{c}(\tau) \, d\tau}\]\\
+其中:
+\[\ \bar{\tau}= \frac{\int_{0}^{\infty} {\tau}A_{c}(\tau) \, d\tau}{\int_{0}^{\infty}A_{c}(\tau) \, d\tau}\]\\
+而 \(A_{c}(\tau)\) 為功率延遲曲線。\\
+\\Coherence bandwidth\cite{goldsmith2005wireless}:被定義為 delay spread 的倒數，代表該頻寬較為穩定。當delay spread 越大時，代表該通道的coherence bandwidth 就會比較小，反之該通道的coherence bandwidth 就會較大。 \\
+\\
+當子載波間距小於coherence bandwidth時，代表符號持續時間與delay spread相比足夠長，同時間不會接收不同symbol，但當子載波間距大於coherence band
+width 時，會因為符號持續時間小於delay spread使得同時間接收到其他symbol
+資訊造成符號間干擾(ISI)(圖二)。\\
+\\
+
+\includegraphics[width=8.5cm,height=4.5cm]{圖片1.png}\\
+圖一:訊號因多路徑的特性產生Delay Spread\cite{WhatisISinLTE?} \\\\
+
+\includegraphics[width=8.5cm,height=4.5cm]{圖片2.png}\\
+圖二:在同一時刻接收到S1、S2和S3的資訊造成ISI\cite{WhatisISinLTE?}\\\\
+在無線通道中，因訊號傳輸受到多路徑(multipath)和多種散射體(scatterers)的干擾下，使得在接收端所接收到的是發送端經由各種路徑和散射體所造成的折射、反射和散射後的多種獨立訊號\cite{goldsmith2005wireless}。而每種獨立訊號具有不同的振幅、相位和時間延遲(如圖三)，可由Rayleigh 、 Rician、Doppler和TDL來描述。\\
+\includegraphics[width=14cm,height=6cm]{圖片16.png}\\
+圖三:訊號傳輸受到多路徑和散射體而有不同時間延遲、振幅和相位\cite{goldsmith2005wireless}
+\newpage
+\subsection{Rayleigh and Rician}
+表一 : Rayleigh and Rician channel fading\cite{ziemer2006principles}\\
+\begin{tabular}[c]{l|l|l}
+    \hline
+     &{\footnotesize Rayleigh} & {\footnotesize Rician} \\
+    \hline
+    {\footnotesize LOS (line of sight)} & {\footnotesize No} & {\footnotesize Yes} \\
+{\footnotesize PDF} & {\footnotesize $f_{R\Phi}(r,\phi) = \frac{r}{\sigma^2} \exp\left[ -\frac{(r^2)}{2\sigma^2} \right]$}
+ & {\footnotesize $f_{R\Phi}(r,\phi) = \frac{r}{\sigma^2} \exp\left[ -\frac{(r^2 + A^2)}{2\sigma^2} \right] I_0 \left( \frac{Ar}{\sigma^2} \right)$}
+
+ \\
+    \hline
+\end{tabular}\\\\
+\\相較於Rician PDF所形成的Rician fading channel，Rayleigh fading channel 因無
+直射路徑(NLOS)的關係，無較大的直射成分能量\cite{goldsmith2005wireless},\cite{ziemer2006principles}，使得訊號受衰減影響較
+大，因此被視為最差情況。雖然 Rayleigh 衰減是一種最差情形，但只要確保
+Rayleigh channel 無受到符號間干擾（ISI) \cite{goldsmith2005wireless},\cite{ziemer2006principles},\cite{OFDM正交分頻多工系統1}，同
+時也代表著其他fading channel 沒有ISI的效應產生。\\\\
+\includegraphics[width=9.5cm,height=4.5cm]{圖片5.png}\\
+圖四:Rayleigh、Rician 和 Gaussian distribution\cite{RayleighfadingandRicianFading}
+\subsection{Doppler}
+在Rayleigh fading channel 中所使用的 Rayleigh fading 模型是假設這些多路徑和
+多種散射體影響下的幅度和相位都是隨機的情形下，接收端物體開始移
+動時所接收到的訊號在相位會受到Doppler的影響而隨時間改變(圖五)
+\includegraphics[width=6cm,height=5cm]{圖片15.png}\\
+圖五: Dense scattering environment \cite{goldsmith2005wireless}\\
+\\
+接收端公式如下:
+\[r(t)=\operatorname{Re}\left\{ \sum_{i=0}^{N-1} \alpha_i(t) u(t-\tau_i(t)) e^{j[\omega_c(t-\tau_i(t))+\phi_{D_i(t)}]}\right\}\]
+經由簡化得到:
+\[r(t) = \operatorname{Re}\left\{ \sum_{i=0}^{N-1} \alpha(t) e^{-j\phi_i(t)} e^{j\omega_c t} \right\} \\
+= r_I(t) \cos(\omega_c t) - r_Q(t) \sin(\omega_c t)\]
+其中$\alpha$ 為Rayleigh分布，$\phi_i(t) = \omega_c \tau_i(t) - \phi_{D_n} - \phi_0$ 為uniform分布[-$\pi$ , $\pi$]。
+\\
+在uniform scatter的環境造成的rayleigh fading中已知正交訊號$r_I(t)$
+、$r_Q(t)$ 互相獨立的情形下，接收端訊號r(t)的autocorrelation呈現零階Bessel function的曲線模型\cite{goldsmith2005wireless},\cite{zheng2002improved} : 
+\begin{align*}
+A_r(\tau) &= A_{r_I}(\tau) \cos(2\pi f_c \tau) + A_{r_I,r_Q}(\tau) \sin(2\pi f_c \tau) \\
+&= A_{r_I}(\tau) \cos(2\pi f_c \tau) \\
+&= \mathcal{P}_{rJ_0}(2\pi f_d \tau)
+\end{align*}
+其中$P_{r}$ 為接收端接收到的總功率，$f_{d}$ 為最大Doppler頻移，$J_{0}(x)$為零階Bessel function。\\
+\\
+當autocorrelation為0時，能產生最大Doppler頻移$f_{d}$，當autocorrelation第一次為0時，$2\pi f_d \tau = 2.4048$，所以$f_d \tau = \frac{2.4048}{2\pi} \approx 0.3827$
+。而$f_{d}$可由$f_d = \frac{v \times f_c}{c}$得出。
+  (v是相對速度，$f_{c}$ 為載波頻率，c是光速)\\
+\includegraphics[width=14cm,height=7cm]{圖片7.png}\\
+圖六:接收端訊號在rayleigh fading in-phase的每個tap的autocorrelation皆符合零階Bessel function的曲線模型\cite{goldsmith2005wireless},\cite{zheng2002improved}，且在$f_d \tau = \frac{2.4048}{2\pi} \approx 0.3827$時第一次達到零值。
+\subsection{TDL(Tapped Delay Line)}
+因TDL為CDL的簡化模型，我們可用CDL來描述TDL。\\
+\\
+CDL(Clustered Delay Line)\cite{jana2023sensing} : 用於多路徑傳輸並且考慮傳輸角度(入射角及反射角)，一般在每個cluster會有20個ray，在物理意義上就是20個路程相近的ray。\\
+\\
+雖因TDL\cite{jana2023sensing},\cite{rappaport2024wireless}在實際上每個tap中是有20個路徑，但20個路徑之間的時間差(與訊號頻寬倒數有關)太小無法解析到20個ray，所以TDL用一根tap代表CDL的20個ray。 其中每個ray的相位是隨機分布，因此這20個隨機的相位加起來就會呈現Rayleigh分布。\\
+\\
+\includegraphics[width=7cm,height=7cm]{圖片8.png}\\
+圖七: CDL with three clusters，右下標示為TDL 在該多路徑通道impulse response \cite{jana2023sensing}。\\
+\\
+由下面接收端數學式說明: 
+\[r(t) = \operatorname{Re}\left\{ \sum_{n=0}^{\infty} \alpha_n(t) e^{-j\phi_n(t)} e^{j2\pi f_c t} \right\}\]
+$\alpha_n(t)$ 和$\phi_n(t)$分別為第n條射線的隨機振幅和相位。\\
+\\
+當 N 足夠大時，根據中央極限定理，實部和虛部的和會趨於零均值、高斯分佈，這導致加總訊號的幅度$r(t)$呈現 Rayleigh 分布。因此將每個tap的值設為Rayleigh fading符合實際通信環境的多路徑衰減特性。\\
+\\
+而多路徑延遲中會因為不同環境場景的通道造成不同delay spread而有不同的衰弱情形，可根據3GPP中的TDL來表之。3GPP\cite{zhu20213gpp}將常見通道定義成'TDL\_A', 'TDL\_B', 'TDL\_C', 'TDL\_D', 'TDL\_E'5種 :\\
+\\
+TDL\_A :假設每個tap的值是相互獨立且服從Rayleigh分佈，且tap之間的干擾是無關聯的。這個模型通常用於描述簡單的多路徑衰減情況，適用於一般的通信系統分析。\\
+\\
+TDL\_B :假設每個tap的值是相互獨立的，但服從Rician分佈而非Rayleigh分佈，這意味著在信號中存在主要路徑和多重散射路徑之間的干擾。這個模型通常用於描述有強烈主要路徑和散射路徑的通信環境，如衛星通信或城市環境。\\
+\\
+TDL\_C:則是一個混合型的模型，結合了TDL\_A和TDL\_B的特性，既考慮了Rayleigh分佈的多重散射，也考慮了Rician分佈的主要路徑。這個模型通常用於更複雜的通信環境，以更準確地模擬真實世界的通道特性。\\
+\\
+TDL\_D:主要用於描述多路徑衰減時，考慮到在通信系統中可能存在的時變性。這種模型會將信道的衰減特性視為隨時間而變化，例如由於使用者的移動導致的信道時變性。TDL\_D模型通常用於建模時變信道，並且能夠更準確地反映出實際通信環境中的時變性。\\
+\\
+TDL\_E:則是一種更複雜的模型，通常用於描述非均勻的多路徑衰減。這種模型考慮到不同的路徑對信號的貢獻不同，例如在特定方向上存在強烈的信號路徑，而在其他方向上則相對較弱。TDL\_E模型能夠更好地模擬出非均勻多路徑衰減的情況，並且用於對特定通信環境進行更精細的分析和設計。\\
+\\
+而OFDM擁有多個抗雜訊方法來對抗多路徑通道所產生的ISI和TDL channel fading等問題，本次主要模擬OFDM在TDL-A模型中對於多路徑通道進行傳輸。
+\section{OFDM}
+\includegraphics[width=13.5cm,height=5.8cm]{圖片9.png}\\
+圖八 : Block Diagram of OFDM Systems\cite{Readme_Matlab_Platform}\\
+\subsection{FDM and OFDM subcarrier}
+FDM \cite{goldsmith2005wireless},\cite{FDMOFDM1} : 通常是一個訊號會搭配一個載波，但此情況通道內部份訊息遇到干擾時，因和載波convolution後訊號的頻寬無互相獨立，導致整個訊息無法正確解碼，容易造成浪費。FDM想法是將載波頻率切割成N等份獨立頻率的子載波，每個子載波負責傳輸一部分訊號，使得各個子載波傳送後的頻寬間無交疊不互相影響獨立，即使某個頻率帶寬受到干擾，其他頻率帶寬上的訊號仍然能夠正確接收和解碼，大大地減少頻寬浪費。\\
+\\
+OFDM \cite{goldsmith2005wireless},\cite{FDMOFDM1}: 但FDM這樣做僅是在相同時間內傳送更多訊號，但總使用頻寬不變，因此試著在頻寬上的子載波間距更小，使得雖然每個subcarrier間有部分重疊，但在該頻率點位置與其他子載波為正交(Orthogonal)不會受到影響(可由下方證明得知)，同時所使用頻寬大大減少，而每個子載波因正交而能夠在同時間分別平行傳送symbol，這就是OFDM的想法。\\
+\\
+證明\cite{goldsmith2005wireless}:\\
+如果忽略通道$h(t)$和噪聲$n(t)$的影響，那麼對於接收信號$s(t)$中每個符號解調器在一個symbol持續時間$T_N$ ($T_N$ 大約為$\frac{1}{15 \text{ kHz}}$，假設每個子載波頻率為$f_0$+ $\frac{i}{T_N}$，其中i= 0~N-1)：\\
+\begin{align*}
+\hat{s}_i &= \int_{0}^{T_N} \left( \sum_{j=0}^{N-1} s_j g(t) \cos(2\pi f_j t + \phi_j) \right) g(t) \cos(2\pi f_i t + \phi_i) \, dt \\
+&= \sum_{j=0}^{N-1} s_j \int_{0}^{T_N} g^2(t) \cos\left(2\pi \left(f_0 + \frac{j}{T_N}\right)t + \phi_j\right) \cos\left(2\pi \left(f_0 + \frac{i}{T_N}\right)t + \phi_i\right) \, dt \\
+&= \sum_{j=0}^{N-1} s_j \delta(j-i) \\
+&= s_i
+\end{align*}
+\setlength\parindent{0pt}其中$\hat{s}_i$為$s(t)$訊號與第i個子通道correlation後的symbol，$s_j$ 是第j個子通道的symbol，$g(t)$是接收濾波器的脈衝響應，$f_j$ 和$f_i$ 分別是第j個和第i個子載波頻率，$\phi_j$ 和$\phi_i$ 分別是第j個和第i個子通道經督普勒影響\cite{goldsmith2005wireless}所產生的相位。\\
+由此可知，在接收端將每個子通道的symbol經子載波調變後的高頻訊號，以及對於第i個子通道的symbol和子載波調變後的高頻訊號進行correlation後得到$\hat{s}_i$，與原先第i個子通道的symbol$s_i$相同。證明了在頻率點位置 $f_i$  和其他子載波的位置之間是正交的相互獨立的，因此即使子載波傳遞後訊號頻寬有重疊部分，也可以有效地區分和接收每個子通道的訊號(圖九)。\\
+\includegraphics[width=14cm,height=7cm]{圖片10.png}\\
+圖九 : OFDM經每個子載波傳遞後的訊號頻寬雖有重疊部分依然有正交性\cite{FDMOFDM2}。
+\newpage
+\subsection{QAM}
+BPSK \cite{HD10_正交振幅調變00583}: 在相同時間(symbol)，可容納一個bit (0($0^{。}$)或1($180^{。}$))的資訊量。\\
+QPSK \cite{HD10_正交振幅調變00583} : 在相同時間(symbol)，可容納兩個bits (00($0^{。}$)、01($90^{。}$)、10($180^{。}$)\\、11($270^{。}$) )的資訊量。\\
+(BPSK和QPSK都是屬於PSK的一種，都是只受到相位影響)\\
+QPSK相對於BPSK可容納較多資訊量，代表在無雜訊情形下相同頻寬大小QPSK有更多資訊，傳輸速度更快。\\
+假設有一數位訊號001010101011101:\\
+BPSK : 一個symbol只能傳輸1bits，因此一次只能傳輸0。\\
+QPSK : 一個symbol能傳輸2bits，因此能一次傳輸00。\\
+\\
+和PSK不同的是QAM\cite{HD10_正交振幅調變00583},\cite{InsideWirelessQAM1},\cite{InsideWirelessQAM2}包含了幅度和相位，以16QAM為例，16QAM擁有4bits的大小。\\
+\\
+假設有一數位訊號0110經過16QAM，是先用星座圖得知0110在星座圖上的位置，在根據位置得出該點複數值，通常會將正弦大小用虛數表之，該複數實數為數位訊號投影至餘弦載波的投影，該複數虛數為數位訊號投影至正弦載波的投影，最後調變相加即可完成QAM調變。\\
+\\
+因16QAM以上相較於能傳輸相同bits資訊的PSK，以星座圖來說點與點之間擁有較多距離，因此QAM較常於被使用。\\
+\\
+在單一載波頻率$f_c$且忽略雜訊情形下，將數位訊號0110透過對應圖十星座盤可得一複數值-3A+jA來代表數位訊號0110透過載波進行調變後可表示成  :
+\[x(t) = (-3A + jA) e^{j2\pi f_c t}\]
+其中"-3A" 和"A" 分別代表正交投影之I、Q分量(I代表映射在餘弦載波的投影，Q代表映射在正弦載波投影)\\
+\includegraphics[width=8cm,height=7cm]{圖片11.png}\\
+圖十 : 在載波頻率$f_c$ 情形下之16QAM星座圖，其中I代表映射在餘弦載波的投影，Q代表映射在正弦載波投影，每個點都有相對應的波形\cite{WhatIsQAM?}。\\
+\\
+在OFDM中將訊號用QAM Mapping時，透過將載波頻率切割成N等份獨立頻率的子載波的特性，在忽略雜訊情形下，將數位訊號011000000110 …透過對應星座盤得一複數值$a_i$+$jb_i$ 來代表第i個子通道對應星座圖的symbol。
+(假設在16QAM、子載波頻率分別為$f_0$ 、$f_1$ 、…、$f_N-1$ 情形下)
+\begin{align*}
+x_0[n] &= (a_0 + jb_0) e^{j2\pi f_0 n} \\
+x_1[n] &= (a_1 + jb_1) e^{j2\pi f_1 n} \\
+&\vdots \\
+x_{N-1}[n] &= (a_{N-1} + jb_{N-1}) e^{j2\pi f_{N-1} n}
+\end{align*}
+在OFDM描述中有提到，如果忽略通道$h(t)$ 和噪聲$n(t)$ 的影響，那麼對於接收信號$s(t)$ 中每個符號解調器在一個symbol持續時間$T_N$ 中所接收到的symbol為 :\\
+\[\hat{s}_i = \int_{0}^{T_N} \left( \sum_{j=0}^{N-1} s_j g(t) \cos(2\pi f_j t + \phi_j) \right) g(t) \cos(2\pi f_i t + \phi_i) dt = s_i\]
+將噪聲$n(t)$ 考慮進去後，會發現到接收端接收到第i個子通道的symbol值會受到第i個子通道中所受到雜訊$n_i$所影響 :
+\[\hat{s}_i = s_i + n_i\]
+由此可知，在$n_i$ 為AWGN的情形下，訊號雜訊比(SNR, Signal-to-noise ratio)\cite{ziemer2006principles}的大小取決於$s_i$ 星座圖上符號點之間的間距所對應的symbol值。\\
+\\
+\includegraphics[width=14cm,height=7cm]{圖片12.png}\\
+圖十一:紅點為圖十16QAM星座圖上的error probability，將3A距離更改為4A後之error probability以綠點顯示，藍線為理論符號錯誤率。\\
+\\
+訊號雜訊比(SNR, Signal-to-noise ratio)：\\
+\begin{align*}
+& \text{SNR} = \frac{P_{\text{signal}}}{P_{\text{noise}}} = \frac{A_{\text{signal}}^2}{A_{\text{noise}}^2}\\
+& \text{SNR(dB)} = 10\log\left(\frac{P_{\text{signal}}}{P_{\text{noise}}}\right) = 20\log\left(\frac{A_{\text{signal}}}{A_{\text{noise}}}\right)
+\end{align*}
+P、A分別表示功率和振幅，其中A用星座圖上該點到原點之距離來描述，將每點振幅相加後取平均即可獲得星座圖的平均功率(x、y分別為一點到y軸、x軸距離) :\\
+\[P_{\text{signal}} = \frac{A_1^2 + A_2^2 + \dots + A_n^2}{n} 
+= \frac{x_1^2 + y_1^2 + x_2^2 + y_2^2 + \dots + x_n^2 + y_n^2}{n}\]
+由此可知，當星座圖的3A更改為4A時，因距離更遠使得4A的平均功率較3A來的大，在AWGN下就會有更好的SNR，相對來說在相同SNR情形下就會降低error probability。
+\newpage
+\subsection{IFFT}
+OFDM經過QAM mapping和parallel後，每個symbol轉成複數值並與子載波相乘調變\cite{goldsmith2005wireless},\cite{OFDM正交分頻多工系統1}(當高頻載波切割成N等份子載波時) :
+(令 $x_k[n]$ 為第k個symbol和第k個子載波相乘調變結果，$X[k]$為第k個symbol(用複數訊號表示，$X[k] = a_k + jb_k$)
+\begin{align*}
+x_0[n] &= X[0] e^{j2\pi \frac{0}{N} n} \\
+x_1[n] &= X[1] e^{j2\pi \frac{1}{N} n} \\
+&\vdots \\
+x_{N-1}[n] &= X[N-1] e^{j2\pi \frac{N-1}{N} n}
+\end{align*}
+其中n可看作在時域上的第n個取樣點\\
+將每個子載波上相同時刻的取樣點n相加 :
+\begin{align*}
+x[n] &= x_0[n] + x_1[n] + \dots + x_{N-1}[n] \\
+&= X[0] e^{j2\pi \frac{0}{N} n} + X[1] e^{j2\pi \frac{1}{N} n} + \dots + X[N-1] e^{j2\pi \frac{N-1}{N} n} \\
+&= \sum_{k=0}^{N-1} X[k] e^{j2\pi \frac{k}{N} n}
+\end{align*}
+此結果與IDFT、IFFT相同，僅是係數不同。\\
+將調變結果Normalize後可得IFFT :
+\[\text{IFFT}[X[k]] = x[n] = \frac{1}{\sqrt{N}} \sum_{k=0}^{N-1} X[k] e^{j2\pi \frac{k}{N} n}\]
+在OFDM系統中，對QAM調製後的訊號和子載波進行相加的操作，本質上相當於將輸入訊號進行取樣後的結果。這個結果可以視為輸入訊號通過逆離散傅立葉變換（IFFT）轉換到時域的過程\cite{goldsmith2005wireless},\cite{OFDM正交分頻多工系統1}。這意味著在OFDM系統中，訊號的調製和合併的操作與時域中的訊號形成是一致的，這使得OFDM系統在頻域和時域之間可以方便地進行轉換和處理。
+\newpage
+\subsection{Cyclic Prefix}
+訊號在通道中產生Delay Spread，可看作在通道做脈衝響應(impulse response)，此時可藉由訊號在時域做convolution\cite{goldsmith2005wireless},\cite{OFDM正交分頻多工系統2}等效於在頻域相乘的特性。在頻域可用接收端訊號$Y = \hat{G}X$來表示，其中$\hat{G}$為系統頻譜響應矩陣，X為輸送端訊號矩陣。\\
+在OFDM中為了在接收端乘上系統頻譜響應的反矩陣 $\hat{G}^{-1}$  來還原出原始X的訊號矩陣，此時的$\hat{G}$在時域必須滿足cyclic convolution同時避免ISI的問題發生。將符號的尾端複製到整個symbol的最前端可滿足cyclic convolution的形式，而從尾端被複製到整個symbol開頭的部分稱為cyclic prefix(圖十二)。\\
+\includegraphics[width=13.5cm,height=2.5cm]{圖片13.png}\\
+圖十二:cyclic prefix of length $\mu$ \cite{goldsmith2005wireless}\\
+\\
+\\
+在無雜訊干擾下可用以下式子描述\cite{OFDM正交分頻多工系統2} :\\
+(Suppose symbol length N=6，cyclic prefix(CP) $\mu$ =2，OFDM symbol length N+$\mu$ =8 ，time-domain impulse response $g = [g[0],g[1],g[2]]$)
+\[y = [g[0], g[1], g[2]] * [x[4], x[5], x[0], x[1], x[2], x[3], x[4], x[5]]\]
+該通道在LTI下的連續脈衝響應為:
+\begin{align*}
+y[0] &= g[0]x[4] \\
+y[1] &= g[0]x[5] + g[1]x[4] \\
+y[2] &= g[0]x[0] + g[1]x[5] + g[2]x[4] \\
+y[3] &= g[0]x[1] + g[1]x[0] + g[2]x[5] \\
+y[4] &= g[0]x[2] + g[1]x[1] + g[2]x[0] \\
+y[5] &= g[0]x[3] + g[1]x[2] + g[2]x[1] \\
+y[6] &= g[0]x[4] + g[1]x[3] + g[2]x[2] \\
+y[7] &= g[0]x[5] + g[1]x[4] + g[2]x[3] \\
+y[8] &= g[1]x[5] + g[2]x[4] \\
+y[9] &= g[2]x[5]
+\end{align*}
+將上述用矩陣表示(以下$y[n]$用$y_n$表示) :
+\[
+\begin{bmatrix}
+y_0\\
+y_1\\
+y_2\\
+y_3\\
+y_4\\
+y_5\\
+y_6\\
+y_7\\
+y_8\\
+y_9\\
+\end{bmatrix}=
+\begin{bmatrix}
+g_0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+g_1 & g_0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+g_2 & g_1 & g_0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+0 & g_2 & g_1 & g_0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+0 & 0 & g_2 & g_1 & g_0 & 0 & 0 & 0 & 0 & 0 \\
+0 & 0 & 0 & g_2 & g_1 & g_0 & 0 & 0 & 0 & 0 \\
+0 & 0 & 0 & 0 & g_2 & g_1 & g_0 & 0 & 0 & 0 \\
+0 & 0 & 0 & 0 & 0 & g_2 & g_1 & g_0 & 0 & 0 \\
+0 & 0 & 0 & 0 & 0 & 0 & g_2 & g_1 & g_0 & 0 \\
+0 & 0 & 0 & 0 & 0 & 0 & 0 & g_2 & g_1 & g_0
+\end{bmatrix}
+\begin{bmatrix}
+x_4 \\
+x_5 \\
+x_0 \\
+x_1 \\
+x_2 \\
+x_3 \\
+x_4 \\
+x_5
+\end{bmatrix}
+\]
+由此可知，在$y_0$、$y_1$、$y_8$和$y_9$部分為因cyclic prefix所形成的ISI，剩餘部分為訊號經通道後cyclic convolution的結果，將cyclic prefix部分捨棄只保留cyclic convolution的矩陣為G，其結果關係為:
+\[
+\begin{bmatrix}
+y_2 \\
+y_3 \\
+y_4 \\
+y_5 \\
+y_6 \\
+y_7
+\end{bmatrix}
+=
+\begin{bmatrix}
+g_2 & g_1 & g_0 & 0 & 0 & 0 & 0 & 0 \\
+0 & g_2 & g_1 & g_0 & 0 & 0 & 0 & 0 \\
+0 & 0 & g_2 & g_1 & g_0 & 0 & 0 & 0 \\
+0 & 0 & 0 & g_2 & g_1 & g_0 & 0 & 0 \\
+0 & 0 & 0 & 0 & g_2 & g_1 & g_0 & 0 \\
+0 & 0 & 0 & 0 & 0 & g_2 & g_1 & g_0
+\end{bmatrix}
+\begin{bmatrix}
+x_4 \\
+x_5 \\
+x_0 \\
+x_1 \\
+x_2 \\
+x_3 \\
+x_4 \\
+x_5
+\end{bmatrix}
+\]
+此時因輸送端的中的$x_4$ 和$x_5$ 在矩陣X中有重複，因此將矩陣G整併後並加上雜訊干擾後可簡化為:
+\[
+\begin{bmatrix}
+y_2 \\
+y_3 \\
+y_4 \\
+y_5 \\
+y_6 \\
+y_7
+\end{bmatrix}
+=
+\begin{bmatrix}
+g_0 & 0   & 0   & 0   & g_2 & g_1 \\
+g_1 & g_0 & 0   & 0   & 0   & g_2 \\
+g_2 & g_1 & g_0 & 0   & 0   & 0   \\
+0   & g_2 & g_1 & g_0 & 0   & 0   \\
+0   & 0   & g_2 & g_1 & g_0 & 0   \\
+0   & 0   & 0   & g_2 & g_1 & g_0
+\end{bmatrix}
+\begin{bmatrix}
+x_0 \\
+x_1 \\
+x_2 \\
+x_3 \\
+x_4 \\
+x_5
+\end{bmatrix}
++
+\begin{bmatrix}
+v_0 \\
+v_1 \\
+v_2 \\
+v_3 \\
+v_4 \\
+v_5
+\end{bmatrix}
+\]
+最終可將接收端和輸送端在OFDM過程的時域上通道的影響表示為 :
+\[\mathbf{y} = \hat{G} \mathbf{x} + \mathbf{v}\]
+其中$\hat{G}$為N×N(在上述例子為6×6)的方陣，v矩陣為雜訊在時域通道上symbol的影響\cite{goldsmith2005wireless}。\\
+\\
+在FFT中訊號透過子載波傳送時其傳遞結果可以視為輸入訊號通過逆離散傅立葉變換（IFFT）轉換到時域的過程。因此可令時域上x和頻域上X矩陣有FFT的關係存在，其FFT和矩陣Q\cite{goldsmith2005wireless},\cite{OFDM正交分頻多工系統2}可表示為 :
+\[\text{FFT}[x[n]] = X[k] = \frac{1}{\sqrt{N}} \sum_{n=0}^{N-1} x[n] e^{-j \frac{2\pi k}{N} n}\]
+\[Q = \frac{1}{\sqrt{N}} 
+\begin{bmatrix}
+1 & 1 & \cdots & 1 & \cdots & 1 \\
+1 & e^{-j \frac{2\pi \cdot 1}{N} \cdot 1} & \cdots & e^{-j \frac{2\pi \cdot k}{N} \cdot 1} & \cdots & e^{-j \frac{2\pi (N-1)}{N} \cdot 1} \\
+\vdots & \vdots & \ddots & \vdots & \ddots & \vdots \\
+1 & e^{-j \frac{2\pi \cdot 1}{N} \cdot n} & \cdots & e^{-j \frac{2\pi \cdot k}{N} \cdot n} & \cdots & e^{-j \frac{2\pi (N-1)}{N} \cdot n} \\
+\vdots & \vdots & \ddots & \vdots & \ddots & \vdots \\
+1 & e^{-j \frac{2\pi \cdot 1}{N} \cdot (N-1)} & \cdots & e^{-j \frac{2\pi \cdot k}{N} \cdot (N-1)} & \cdots & e^{-j \frac{2\pi (N-1)}{N} \cdot (N-1)}
+\end{bmatrix}\]
+其中$X=Qx$ 且$x = Q^{-1} X = Q^H X$，$Q^H$為$Q$的共軛轉置\cite{goldsmith2005wireless}。\\
+\\
+最後可得 : 
+\begin{align*}
+Y &= Qy &&\text{(FFT)} \\
+&= Q[G^\text{H}(x+v)] &&\text{(since } y = G^\text{H}x+v) \\
+&= Q[G^\text{H}Q^\text{H}(X+v)] &&\text{(IFFT)} \\
+&= Q[M\Lambda M^\text{H}Q^\text{H}(X+v)] &&\text{(} G^\text{H} \text{ is diagonalizable matrix)} \\
+&= QM\Lambda M^\text{H}Q^\text{H}(X+Qv) &&\text{(distributivity\cite{可對角化矩陣的譜分解})} \\
+&= M^\text{H}MM\Lambda M^\text{H}(MX+Qv) &&\text{(} Q^\text{H} \text{ are eigenvectors of } {\hat{G}}) \\
+&= \Lambda X + v_Q &&\text{(} M^\text{H}M=MM^\text{H}=I\text{)}
+\end{align*}
+在忽略噪音$v_Q$ 的干擾下，可看作接收端的Y為輸送端的X經對角矩陣$\Lambda$ :
+\[Y=\Lambda X\]
+其矩陣可表示為:
+\[
+\begin{bmatrix}
+Y_0 \\
+Y_1 \\
+\vdots \\
+Y_n \\
+\vdots \\
+Y_{N-1}
+\end{bmatrix}
+=
+\begin{bmatrix}
+H_{0,0} & 0 & \cdots & \cdots & 0 & 0 \\
+0 & H_{1,1} & \cdots & \cdots & 0 & 0 \\
+\vdots & \vdots & \ddots & \ddots & \vdots & \vdots \\
+0 & 0 & \cdots & H_{n,n} & \cdots & 0 \\
+\vdots & \vdots & \ddots & \ddots & \vdots & \vdots \\
+0 & 0 & \cdots & \cdots & 0 & H_{N-1,N-1}
+\end{bmatrix}
+\begin{bmatrix}
+X_0 \\
+X_1 \\
+\vdots \\
+X_n \\
+\vdots \\
+X_{N-1}
+\end{bmatrix}
+\]
+由上述可驗證，OFDM系統通道的頻域中，在忽略雜訊干擾情形下，只需在接收端$Y_n$乘上脈衝響應經cyclic prefix後相對應衰弱係數$H_{n,n}$ 的倒數  $\frac{1} {H_{n,n}}$，即可回復為原輸送端的訊號 $X_n$ 。\\
+\\
+最終16QAM經模擬結果當訊號經過TDL\_A Rayleigh fading channel時，所呈現出SNR對應的SER和理論曲線相同(圖十三)。\\
+\\
+\includegraphics[width=14cm,height=7cm]{圖片14.png}\\
+圖十三:16QAM,TDL\_A Channel, Delay Spread 30 ns Changing Independently Every OFDM Symbol \\
+
+\newpage
+\nocite{*}
+\printbibliography
+\end{document}
+
+
+
+
+
+
+
+
+
+
+
+
+% 基本的有 $...$ 或是 \[...\] (Tip：$$...$$ 為舊版，請使用\[...\])
+%行內的文字和句中的 $a+b=c$ 數學式之間會加一個空格，比較好看。
+%比較短的式子才加在句中，比較長或比較重要的式子，比如 $\sum_{k=1}^n k^2 = 1+4+\cdots+n^2 = \frac{n(n+1)(2n+1)}{6}$ 放在式子中會不好看，所以要用反斜中括號
+%\[\sum_{k = 1}^n k^2 = 1 + 4 + \cdots + n^2 = \frac{n(n+1)(2n+1)}{6}\]
+%放在中間。
+%接下來我們來看各種數學式子的打法。
+
+\section{數學式}
+例子：Functional equation of zeta function.
+\[\zeta (s)=2^{s}\pi ^{s-1}\sin \left({\frac {\pi s}{2}}\right)\Gamma (1-s)\zeta (1-s)\]
+再來，讓我們一一解釋會用到的物件。
+
+\subsection{基礎符號}
+% 基礎運算：顯示的跟打的一樣 +-*/=()[]
+% 數學環境內的空白會被忽略 (數學內要使用\, 或 \quad)
+
+\[ 1 + 2 - (3 * 4) / 5 = 0.6\]
+\[1+2-(3*4)/5=0.6\]
+\[1+1=2, \quad 2*2=2+2\]
+\[F(x,y)\, dx\]
+
+% 為了減少空格量的不穩定，不要無緣無故加上空格較佳
+
+\subsection{上下標}
+% 上下標與大括號：大括號內視為一組
+% 上下標順序對TeX沒有差，但通常會視到底應該是 (a_1)的^2 還是 (a^2)的_1 決定哪個放前面。
+\[(x_1+x_2)^2 = x_1^2 +2x_1x_2+x_2^2\]
+\[\lambda_1,\lambda_2,\ldots,\lambda_{20}\]
+
+\textbf{練習：}大括號的不同。試著打出
+\[a_5\times 10 \neq a_{5\times 10}\]
+%-----練習區-----%
+\[
+    % 在這裡試試
+\]
+%-----練習區-----%
+\subsection{希臘字母}
+% 希臘字母：加上反斜線，大寫希臘字母為首字大寫，以及一些變體。
+\[ax^2+bx+c = a(x-\alpha)(x-\beta)\]
+
+\textbf{練習：}Uniform continuity. 試著打出
+\[\forall \varepsilon>0,\, \exists \delta>0,\, [|y-x|<\varepsilon \implies |f(y)-f(x)|<\varepsilon]\]
+%-----練習區-----%
+\[
+    % 在這裡試試
+\]
+%-----練習區-----%
+
+\subsection{特殊符號}
+% 特殊符號：許多不同意義的數學符號
+\[X \subseteq Y\cup Z \iff \forall x \in X,\, x\in Y \lor x\in Z.\]
+
+\[B\simeq A\oplus C \implies 0\to A\to B\to C\to 0\]
+
+\textbf{練習：}Existence of empty set. 請打出
+\[\exists \varnothing, \forall x,\, x\notin \varnothing \]
+%-----練習區-----%
+\[
+    % 在這裡試試
+\]
+%-----練習區-----%
+
+\subsection{分數與根號}
+% 分數、根號的用法
+\[x=\frac{-b\pm\sqrt{b^2-4ac}}{2a}\]
+
+\[\sqrt{x^2+y^2+z^2}\leq \sqrt[4]{3(x^4+y^4+z^4)}.\]
+
+\textbf{練習：}Schr\"odinger equation for free particle in one dimension. 打出
+\[\frac{-\hbar^2}{2m}\frac{\partial^2}{\partial x^2}\Psi = i \hbar \frac{\partial}{\partial t}\Psi\]
+%-----練習區-----%
+\[
+    % 在這裡試試
+\]
+%-----練習區-----%
+
+\subsection{數學字體}
+% 數學字體 (\mathbb{},\mathcal{},\mathfrak{})
+$\mathbb{F}_p:= \mathbb{Z}/p\mathbb{Z}$, where $p$ is a prime number.
+\[\mathbb{Q}=\left\{\frac{m}{n}:m,n\in\mathbb{Z},n\neq 0\right\}\]
+
+\textbf{練習：}Theorem of intersecting family. 打出以下文字：\\
+If $\mathcal{F} \subseteq 2^X$ and for each $S,T\in \mathcal{F}, |S\cap T|$ is even, then $|\mathcal{F}|\leq 2^{\lfloor n/2 \rfloor}$.
+%-----練習區-----%
+\[
+    % 在這裡試試
+\]
+%-----練習區-----%
+
+\subsection{點點點}
+% 點點點：\ldots 於列出每一項，中間用逗號隔開時使用；\cdots 則於其他大部分情況使用。
+
+\[S^{n}:= \{ (x_0,x_1,\ldots,x_n)\in \mathbb{R}^{n+1} \,|\, x_0^2+x_1^2+\cdots+ x_n^2 = 1\}\]
+
+\subsection{重音符號}
+% 重音符號：符號上方的東西
+\[\ddot{u} = \frac{d^2}{d^2x}u
+,\quad
+\vec{v} = (x_1,x_2,\ldots,x_n).\]
+
+\subsection{大型運算子}
+% \sum_{}^{}, \int_{}^{}: 大型運算子
+% \left(...\right): 大的括號
+
+文字內 $\sum_{n=1}^\infty \frac{1}{n^2}=\frac{\pi^2}{6}$,
+\[\prod_{n=1}^{\infty} \frac{1}{n^2}=0,\]
+文字內 $\sum\limits_{n=1}^\infty \frac{1}{n^2}=\frac{\pi^2}{6}$. % 加了\limits
+
+\[ \left(\frac{n}{k} \right)^n \leq \binom{n}{k} < \left(\frac{ne}{k}\right)^2 \approx \frac{n^n \cdot (2.718281828)^n}{k^n},\quad n>k\geq 0.\]
+
+\[\int_0^1 x\, \mathrm{d}x =  \left. \frac{x^2}{2} \right|_0^1.\]
+
+\textbf{練習：}Set theory. 打上
+    \[\bigcap_{\alpha\in \Lambda} \left( \bigcup_{\beta\in \Lambda_\alpha} S_{\alpha,\beta} \right) 
+    = \bigcup_{\{\beta_\alpha\}: \alpha\in \Lambda, \beta_\alpha\in \Lambda_\alpha} \bigcap_{\alpha \in \Lambda} S_{\alpha,\beta_\alpha} \]
+%-----練習區-----%
+\[
+    % 在這裡試試
+\]
+%-----練習區-----%
+
+\subsection{其他}
+% 英文引號請不要直接用 "word"，請用 ``word''
+% 橫線有三種
+英文引號【A good ``quote,'' a bad "quote".】與橫線【There are some mind-blowing equations on pages 15--96. This is a sentence --- with comment. 還有中文破折號-----對～】
+
+\subsection{文字運算子}
+% $cos x$ 的意思是 c,o,s,x 相乘，遇到類似的請加上反斜線
+\[\cos(\phi+\psi) = \cos\phi \cos\psi - \sin\phi \sin\psi\]
+\[\lim_{n\to\infty} \log_n 2 = 1.\]
+
+% 模運算 mod 的使用
+\[a^p \equiv a \pmod p\]
+
+% \operatorname{}: 使用自定義的文字運算子
+\[\operatorname{coker} f := H / \operatorname{Im} G\]
+
+\textbf{練習：}Rank-nullity theorem. 打出
+\[\dim V = \dim \operatorname{Im} T + \dim \ker T.\]
+%-----練習區-----%
+\[
+    % 在這裡試試
+\]
+%-----練習區-----%
+
+\subsection{特殊字元}
+% 特殊字元：依下列方式打出
+The symbols  \&, \%, \$, \#, \_, \{, \}, \~{}, \^{}, and \textbackslash{} cannot be input directly. Here are the ways to type them.
+
+\subsection{最終練習}
+打出一開始出現的例子(Functional equation of zeta function.)
+%-----練習區-----%
+\[
+    % 在這裡試試
+\]
+%-----練習區-----%
+
+\section{更多網路上的資源}
+首先，「\href{https://detexify.kirelabs.org/classify.html}{DeTeXify}」是一個在框框中畫上符號就會給出 LaTeX 指令的網站。注意，有指令會需要相對應的套件（package）！再來，「\href{https://ctan.org/}{The Comprehensive TeX Archive Network (CTAN)}」是最全面的 TeX 資料網，其中包含了符號大全「\href{https://tug.ctan.org/info/symbols/comprehensive/symbols-a4.pdf}{The Comprehensive LaTeX Symbol List}」，以及如何製作符號的教學與各種套件的使用說明書等等。還有，「\href{https://tex.stackexchange.com/}{LaTeX Stack Exchange}」是知名的討論版。最後，是真的不短的 LaTeX 手冊「\href{http://tug.ctan.org/info/lshort/english/lshort.pdf}{The Not so short Introduction to LaTeX2e}」。
+
