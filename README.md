@@ -18,4 +18,4 @@
 - **專題主題** : 5G標準應用_Rayleigh通道中OFDM系統分析  
 - **內容說明** :
 
-  主要分析因多路徑通道產生的Delay Spread所形成ISI的問題，並透過3GPP所定義的以Rayleigh為準的TDL-A模型和5G NR頻寬標準來模擬實際環境，也探討傳送端每個步驟(Mapping(16QAM)、Serial to Parallel、IFFT、Parallel to Serial和Add Cyclic Prefix)的過程是如何避免ISI的效應產生。整個過程以Matlab方式進行實現，最終以Latex形式完成整體報告。
+  主要分析因多路徑通道產生的Delay Spread所形成ISI的問題，並透過3GPP所定義的以Rayleigh為準的TDL-A模型和5G NR頻寬標準來模擬實際環境，也探討傳送端每個步驟(Mapping(以16QAM呈現)、Serial to Parallel、IFFT、Parallel to Serial和Add Cyclic Prefix)的過程是如何避免ISI的效應產生。整個過程以Matlab方式進行實現，最終以Latex形式完成整體報告。
