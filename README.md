@@ -7,9 +7,13 @@
 <hr>
 
 ### 小型個人專案
-- Education：國立臺北大學/ 通訊工程學系
+- Network Simulateion by Dijkstra’s_Algorithm project
 - Spectrogram and Signal Process project
 - Image compression project
-- Digital Filter
-- Birthday : 2002/09/15
-<hr>
+- 16QAM, 16PSK, and APSK Mapping Comparison project
+- Digital Filter project
+- Generating Waves project
+  
+### 專題
+**專題主題** :　5G標準應用_Rayleigh通道中OFDM系統分析  
+**內容摘要** :　
