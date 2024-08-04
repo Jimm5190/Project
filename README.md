@@ -6,4 +6,10 @@
 - Birthday : 2002/09/15
 <hr>
 
-### Portfolio
+### 小型個人專案
+- Education：國立臺北大學/ 通訊工程學系
+- Spectrogram and Signal Process project
+- Image compression project
+- Digital Filter
+- Birthday : 2002/09/15
+<hr>
