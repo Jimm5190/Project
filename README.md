@@ -1,6 +1,6 @@
 # 曾義竣(ZENG,YI-JUN)
 - Education：國立臺北大學/ 通訊工程學系
-- Rank : 3/34 (8.82%)
+- Rank : 3/35 (8.57%)
 - E-mail：jim.519019@gmail.com
 - Mobile：0939-988-220
 - Birthday : 2002/09/15
@@ -13,6 +13,7 @@
 - 16QAM, 16PSK, and APSK Mapping Comparison project
 - Digital Filter project
 - Generating Waves project
+- 影像辨識智慧結帳與LINE Bot 整合應用
   
 ### 專題
 - **專題主題** : 5G標準應用_Rayleigh通道中OFDM系統分析  
