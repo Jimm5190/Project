@@ -1,6 +1,7 @@
 # 曾義竣(ZENG,YI-JUN)
-- Education：國立臺北大學/ 通訊工程學系
-- Rank : 3/35 (8.57%)
+- Education：
+- 國立陽明交通大學 電信工程研究所
+- 國立臺北大學/ 通訊工程學系 3/35 (8.57%)
 - E-mail：jim.519019@gmail.com
 - Mobile：0939-988-220
 - Birthday : 2002/09/15
