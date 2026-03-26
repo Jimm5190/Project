@@ -23,6 +23,9 @@
 
 #### Embedded System
 - 影像辨識智慧結帳與LINE Bot 整合應用
+
+#### FPGA
+- Color Temperature & AWB
   
 ### 專題
 - **專題主題** : 5G標準應用_Rayleigh通道中OFDM系統分析  
