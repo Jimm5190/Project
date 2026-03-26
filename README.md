@@ -8,12 +8,20 @@
 <hr>
 
 ### 小型個人專案
+#### Network
 - Network Simulateion by Dijkstra’s_Algorithm project
+- 
+#### Communication System
+- 16QAM, 16PSK, and APSK Mapping Comparison project
+- Fading Channel
+
+#### Digital Signal Process
 - Spectrogram and Signal Process project
 - Image compression project
-- 16QAM, 16PSK, and APSK Mapping Comparison project
 - Digital Filter project
 - Generating Waves project
+
+#### Embedded System
 - 影像辨識智慧結帳與LINE Bot 整合應用
   
 ### 專題
